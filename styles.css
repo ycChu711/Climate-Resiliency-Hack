@@ -1,0 +1,269 @@
+/* General Styles */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    margin-top: 80px;
+}
+
+/* Fixed Navbar */
+.nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Ensure the navbar spans the full width */
+    z-index: 1000;
+    background-color: #2c3e50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    /* Include padding in width calculations */
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title Styling */
+.nav-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Navbar Links */
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-item {
+    color: white;
+    text-decoration: none;
+    font-size: 1em;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+}
+
+.nav-item:hover {
+    background-color: #34495e;
+}
+
+.nav-item.active {
+    background-color: #8a2be2;
+    font-weight: bold;
+}
+
+
+/* Page Titles */
+h1,
+h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #34495e;
+}
+
+/* Cards and Containers */
+.card,
+.community-reports,
+.emergency-contacts {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.report-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Parking List Layout */
+.parking-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* Responsive grid */
+    gap: 20px;
+    /* Consistent gap between items */
+    margin-top: 20px;
+}
+
+/* Parking Item Styles */
+.parking-item {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Title and Icon Alignment */
+.parking-item h3 {
+    display: flex;
+    align-items: center;
+    /* Align icon and text horizontally */
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.parking-item h3 i {
+    margin-right: 8px;
+    font-size: 1.5em;
+}
+
+/* Paragraph Styles */
+.parking-item p {
+    margin: 2px 0;
+    font-size: 1em;
+    color: #555;
+    line-height: 1.5;
+}
+
+.emergency-contacts {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: nowrap;
+    /* Ensure items are on the same row */
+    margin-top: 20px;
+}
+
+.contact-item {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 30%;
+    /* Ensure all cards fit in the same row */
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-item h3 {
+    display: flex;
+    align-items: center;
+    /* Align icon and text */
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.contact-item h3 i {
+    margin-right: 8px;
+    /* Space between icon and text */
+    font-size: 1.5em;
+}
+
+.contact-item p {
+    margin: 0;
+    font-size: 1em;
+    color: #555;
+    line-height: 1.5;
+}
+
+.parking-item:last-child,
+.contact-item:last-child,
+.report-card:last-child {
+    border-bottom: none;
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    margin: 5px;
+}
+
+.safe-btn {
+    background-color: #28a745;
+}
+
+.danger-btn {
+    background-color: #dc3545;
+}
+
+.alert-close {
+    background-color: #6c757d;
+}
+
+/* Status Styles */
+.status-safe {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.status-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 10px;
+    }
+
+    .nav-bar {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .emergency-contacts {
+        flex-direction: column;
+        /* Stack vertically on smaller screens */
+    }
+
+    .contact-item {
+        width: 90%;
+        /* Full width on smaller screens */
+    }
+
+    .parking-list {
+        grid-template-columns: 1fr;
+        /* Full width for small screens */
+    }
+}
