@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Previous head section and styles remain the same until script -->
+
+<head>
+    <!-- Previous head content remains the same -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splash - Flood Risk Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Previous styles remain the same -->
+    <style>
+        /* Previous styles remain the same */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 8px;
+        }
+
+        .controls {
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .safe-btn {
+            background-color: #28a745;
+        }
+
+        .danger-btn {
+            background-color: #dc3545;
+        }
+
+        .alert-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 80%;
+            width: 400px;
+            text-align: center;
+        }
+
+        .alert-popup.show {
+            display: block;
+        }
+
+        .alert-title {
+            color: #dc3545;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .alert-content {
+            margin-bottom: 15px;
+        }
+
+        .alert-close {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .danger-indicator {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 998;
+            animation: pulse 2s infinite;
+        }
+
+        .danger-indicator.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .danger-icon {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
+        #location-status {
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-safe {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Previous HTML structure remains the same -->
+    <div class="app-container">
+        <h1>SPLASH</h1>
+        <div class="card">
+            <div id="map"></div>
+            <div id="location-status"></div>
+            <div class="controls">
+                <button class="danger-btn" id="danger-btn">Mark Dangerous</button>
+                <button class="safe-btn" id="safe-btn">Mark Safe</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="danger-indicator" id="danger-indicator">
+        <span class="danger-icon">⚠️</span>
+        <span>DANGER ZONE</span>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="alert-popup" id="alert-popup">
+        <div class="alert-title">⚠️ Warning: Danger Zone</div>
+        <div class="alert-content">
+            You are currently located in an area that has been marked as dangerous. Please exercise caution and consider
+            moving to a safer location.
+        </div>
+        <button class="alert-close" onclick="closeAlert()">Understand</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([51.505, -0.09], 13);
+
+        // Store current location and watching state
+        let currentLocation = null;
+        let locationMarker = null;
+        let isInDanger = false;
+        let locationWatcher = null;
+
+        // Load tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Zone storage
+        const zoneMarkers = new Map(); // Store all zone markers
+
+        // Color gradients
+        const dangerGradient = [
+            '#ffe6e6', '#ffcccc', '#ffb3b3', '#ff9999', '#ff8080',
+            '#ff6666', '#ff4d4d', '#ff3333', '#ff1a1a', '#ff0000'
+        ];
+        const safeGradient = [
+            '#e6ffe6', '#ccffcc', '#b3ffb3', '#99ff99', '#80ff80',
+            '#66ff66', '#4dff4d', '#33ff33', '#1aff1a', '#00ff00'
+        ];
+
+        function getZoneKey(latlng) {
+            return `${latlng.lat.toFixed(4)}_${latlng.lng.toFixed(4)}`;
+        }
+
+        function isInDangerZone(latlng) {
+            let inDanger = false;
+            let nearestSafeZone = Infinity;
+            let nearestDangerZone = Infinity;
+
+            zoneMarkers.forEach((zone, key) => {
+                const [lat, lng] = key.split('_').map(Number);
+                const distance = map.distance(latlng, [lat, lng]);
+
+                if (distance <= 100) { // Within zone radius
+                    if (zone.isDangerous) {
+                        nearestDangerZone = Math.min(nearestDangerZone, distance);
+                    } else {
+                        nearestSafeZone = Math.min(nearestSafeZone, distance);
+                    }
+                }
+            });
+
+            // If there's a safe zone closer than or at same distance as danger zone, location is safe
+            return nearestDangerZone < nearestSafeZone;
+        }
+
+        function updateDangerStatus(inDanger) {
+            const indicator = document.getElementById('danger-indicator');
+            const statusElement = document.getElementById('location-status');
+
+            isInDanger = inDanger;
+            if (inDanger) {
+                indicator.classList.add('show');
+                statusElement.className = 'status-danger';
+                statusElement.textContent = '⚠️ You are in a danger zone';
+                showAlert();
+            } else {
+                indicator.classList.remove('show');
+                statusElement.className = 'status-safe';
+                statusElement.textContent = '✅ You are in a safe area';
+            }
+        }
+
+        function showAlert() {
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('alert-popup').classList.add('show');
+        }
+
+        function closeAlert() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('alert-popup').classList.remove('show');
+        }
+
+        function addZoneMarker(latlng, isDangerous) {
+            const zoneKey = getZoneKey(latlng);
+            const gradient = isDangerous ? dangerGradient : safeGradient;
+
+            // Remove existing marker at this location if it exists
+            if (zoneMarkers.has(zoneKey)) {
+                map.removeLayer(zoneMarkers.get(zoneKey).marker);
+            }
+
+            // Create new marker
+            const marker = L.circle(latlng, {
+                radius: 100,
+                color: gradient[gradient.length - 1],
+                fillColor: gradient[gradient.length - 1],
+                fillOpacity: 0.5
+            }).addTo(map);
+
+            // Store marker with its type
+            zoneMarkers.set(zoneKey, {
+                marker: marker,
+                isDangerous: isDangerous
+            });
+
+            // Update danger status if we have a current location
+            if (currentLocation) {
+                updateDangerStatus(isInDangerZone(currentLocation));
+            }
+        }
+
+        function updateLocation(e) {
+            currentLocation = e.latlng;
+
+            // Update location marker
+            if (locationMarker) {
+                map.removeLayer(locationMarker);
+            }
+            locationMarker = L.marker(currentLocation).addTo(map);
+
+            // Check danger status
+            updateDangerStatus(isInDangerZone(currentLocation));
+        }
+
+        // Set up location watching with high accuracy
+        function startLocationWatching() {
+            if (locationWatcher === null) {
+                locationWatcher = map.locate({
+                    watch: true,
+                    setView: true,
+                    maxZoom: 16,
+                    enableHighAccuracy: true
+                });
+            }
+        }
+
+        // Event listeners
+        map.on('locationfound', updateLocation);
+        map.on('locationerror', function () {
+            alert("Unable to retrieve your location.");
+        });
+
+        // Button handlers
+        document.getElementById('danger-btn').addEventListener('click', function () {
+            if (currentLocation) {
+                addZoneMarker(currentLocation, true);
+            } else {
+                alert("Please wait for your location to be determined.");
+            }
+        });
+
+        document.getElementById('safe-btn').addEventListener('click', function () {
+            if (currentLocation) {
+                addZoneMarker(currentLocation, false);
+            } else {
+                alert("Please wait for your location to be determined.");
+            }
+        });
+
+        // Start watching location when page loads
+        startLocationWatching();
+    </script>
+</body>
+
+</html>
