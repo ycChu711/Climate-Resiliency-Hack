@@ -1,46 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Previous head section and styles remain the same until script -->
 
 <head>
-    <!-- Previous head content remains the same -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Splash - Flood Risk Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <!-- Previous styles remain the same -->
+    <link rel="stylesheet" href="../styles.css" />
+    <script defer src="../navbar/navbar.js"></script>
     <style>
-        /* Previous styles remain the same */
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 600px;
-            margin: 20px 0;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
@@ -189,9 +157,10 @@
 </head>
 
 <body>
-    <!-- Previous HTML structure remains the same -->
+    <div id="navbar"></div>
+
     <div class="app-container">
-        <h1>SPLASH</h1>
+        <h1>Flood Risk Map</h1>
         <div class="card">
             <div id="map"></div>
             <div id="location-status"></div>
@@ -220,7 +189,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         // Initialize map
-        const map = L.map('map').setView([51.505, -0.09], 13);
+        const map = L.map('map').setView([47.6062, -122.3321], 13); // Seattle
 
         // Store current location and watching state
         let currentLocation = null;
